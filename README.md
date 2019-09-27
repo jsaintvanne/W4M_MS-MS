@@ -60,6 +60,7 @@ Use the following links for more details:
 --------------------
 Lawson, T.N., Weber, R.J., Jones, M.R., Chetwynd, A.J., Rodriguez Blanco, G.A., Di Guida, R., Viant, M.R. and Dunn, W.B., 2017. msPurity: Automated Evaluation of Precursor Ion Purity for Mass Spectrometry Based Fragmentation in Metabolomics. Analytical Chemistry.[^1]
 
+[^1]: [Lawson, T.N., Weber, R.J., Jones, M.R., Chetwynd, A.J., Rodriguez Blanco, G.A., Di Guida, R., Viant, M.R. and Dunn, W.B., 2017. msPurity: Automated Evaluation of Precursor Ion Purity for Mass Spectrometry Based Fragmentation in Metabolomics. Analytical Chemistry.]("http://pubs.acs.org/doi/abs/10.1021/acs.analchem.6b04358")
 </details>
 -----------
 -----------
@@ -77,6 +78,8 @@ During this protocol, we make pooled QC samples in which we mix all sample from 
 
 ![A basic manipulation]("https://github.com/jsaintvanne/W4M_MS-MS/blob/dev/images/basic_manip.png")
 
+
+[^2]: [Broadhurst, D., Goodacre, R., Reinke, S.N. et al. Guidelines and considerations for the use of system suitability and quality control samples in mass spectrometry assays applied in untargeted clinical metabolomic studies.  Metabolomics (2018) 14: 72.]("https://link.springer.com/article/10.1007%2Fs11306-018-1367-3")
 </details>
 
 
@@ -92,5 +95,3 @@ During this protocol, we make pooled QC samples in which we mix all sample from 
 
 
 
-[^1]: [Lawson, T.N., Weber, R.J., Jones, M.R., Chetwynd, A.J., Rodriguez Blanco, G.A., Di Guida, R., Viant, M.R. and Dunn, W.B., 2017. msPurity: Automated Evaluation of Precursor Ion Purity for Mass Spectrometry Based Fragmentation in Metabolomics. Analytical Chemistry.]("http://pubs.acs.org/doi/abs/10.1021/acs.analchem.6b04358")
-[^2]: [Broadhurst, D., Goodacre, R., Reinke, S.N. et al. Guidelines and considerations for the use of system suitability and quality control samples in mass spectrometry assays applied in untargeted clinical metabolomic studies.  Metabolomics (2018) 14: 72.]("https://link.springer.com/article/10.1007%2Fs11306-018-1367-3")
