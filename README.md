@@ -64,6 +64,7 @@ Lawson, T.N., Weber, R.J., Jones, M.R., Chetwynd, A.J., Rodriguez Blanco, G.A., 
 [^1]: [Lawson, T.N., Weber, R.J., Jones, M.R., Chetwynd, A.J., Rodriguez Blanco, G.A., Di Guida, R., Viant, M.R. and Dunn, W.B., 2017. msPurity: Automated Evaluation of Precursor Ion Purity for Mass Spectrometry Based Fragmentation in Metabolomics. Analytical Chemistry.]("http://pubs.acs.org/doi/abs/10.1021/acs.analchem.6b04358")
 </details>
 =======================
+
 <details><summary>
 W4M project
 </summary>
@@ -77,12 +78,18 @@ As described in this publication[^2], we have a basic protocol for injections de
 
 During this protocol, we make pooled QC samples in which we mix all sample from all classes. That can cause the dilution of our searching compound and we can miss it during the fragmentation selection due to a very low intensity... As explain in the next picture with the A compound :
 
-![A basic manipulation](https://github.com/jsaintvanne/W4M_MS-MS/blob/dev/images/basic_manip.png)![Results from this basic manipulation](https://github.com/jsaintvanne/W4M_MS-MS/blob/dev/images/basic_manip.png)
+![A basic manipulation](https://github.com/jsaintvanne/W4M_MS-MS/blob/dev/images/basic_manip.png)
+![Results from this basic manipulation](https://github.com/jsaintvanne/W4M_MS-MS/blob/dev/images/basic_results.png)
 
 To avoid this kind of loss, we can propose an easy quite new protocol where we make pooled QC samples only if they are from the same class. With this kind of manipulation we should miss less compound because they will be in a good intensity in each pooled QC sample and the fragmentation selection should find them easily : 
 
 ![New W4M injection of samples](https://github.com/jsaintvanne/W4M_MS-MS/blob/dev/images/new_table.png)
+
+During these injections, we respect the same protocol as previous one. We just change the end with injection for MS-MS runs. These injections should only concern samples of the same class that have been pooled. With this thing, we can obtain the following results :
+
 ![New W4M manipulation](https://github.com/jsaintvanne/W4M_MS-MS/blob/dev/images/new_manip.png)
+
+As we can see in the previous picture, pooled QC have now enough class specific compounds to be detected then fragmented. We now have more MS-MS fragmented ions to match with all features peakpicked : 
 ![New W4M results](https://github.com/jsaintvanne/W4M_MS-MS/blob/dev/images/new_results.png)
 
 
