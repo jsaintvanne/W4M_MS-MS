@@ -1,7 +1,8 @@
 # W4M_MS-MS and Galaxy
 
 <details><summary>
-## msPurity package
+msPurity package
+==============
 </summary>
 
 msPurity is a R package developped by Birmingham University searchers. It is associated with Galaxy wrappers to be able to run its functions on the Galaxy platform. We can find on Github each repository : for [R package]("https://github.com/computational-metabolomics/msPurity#mspurity-package-to-assess-precursor-ion-purity-process-fragmentation-spectra-and-perform-spectral-matching"), and for [Galaxy wrappers associated]("https://github.com/computational-metabolomics/mspurity-galaxy"). 
@@ -65,7 +66,8 @@ Lawson, T.N., Weber, R.J., Jones, M.R., Chetwynd, A.J., Rodriguez Blanco, G.A., 
 -----------
 -----------
 <details><summary>
-## Our project
+Our project
+==========
 </summary>
 
 The [Workflow4Metabolomics]("http://workflow4metabolomics.org"), W4M in short, is a French infrastructure offering software tool processing, analysing and annotating metabolomics data. It is based on the Galaxy platform.
@@ -80,6 +82,7 @@ During this protocol, we make pooled QC samples in which we mix all sample from 
 
 
 [^2]: [Broadhurst, D., Goodacre, R., Reinke, S.N. et al. Guidelines and considerations for the use of system suitability and quality control samples in mass spectrometry assays applied in untargeted clinical metabolomic studies.  Metabolomics (2018) 14: 72.]("https://link.springer.com/article/10.1007%2Fs11306-018-1367-3")
+
 </details>
 
 
