@@ -282,7 +282,6 @@ buildSamplemetadataFromTable <- function(sampleMetadata, files){
     filepattern <- paste(paste("\\.", filepattern, "$", sep = ""), collapse = "|")
     #Verify the colnames
     if("MSMS" %in% colnames(sampleMetadata)){
-        print("Find a MSMS column")
         if("class" %in% colnames(sampleMetadata)){
             MSMS <- sampleMetadata[,"MSMS"]
             class <- sampleMetadata[,"class"]
@@ -290,13 +289,12 @@ buildSamplemetadataFromTable <- function(sampleMetadata, files){
             MSMS <- sampleMetadata[,"MSMS"]
             class <- sampleMetadata[,"sample_group"]
         }else{
-            error_message <- "Can't find any class or sample_group column for files ! \n"
+            error_message <- "Can't find any class or sample_group column from sampleMetadata ! \n"
             cat(error_message)
             stop(error_message)
             return(NULL)
         }
     }else if("sample_name" %in% colnames(sampleMetadata)){
-        print("Find a sample_name column")
         if("class" %in% colnames(sampleMetadata)){
             MSMS <- sampleMetadata[,"sample_name"]
             class <- sampleMetadata[,"class"]
@@ -304,13 +302,12 @@ buildSamplemetadataFromTable <- function(sampleMetadata, files){
             MSMS <- sampleMetadata[,"sample_name"]
             class <- sampleMetadata[,"sample_group"]
         }else{
-            error_message <- "Can't find any class or sample_group column for files ! \n"
+            error_message <- "Can't find any class or sample_group column from sampleMetadata ! \n"
             cat(error_message)
             stop(error_message)
             return(NULL)
         }
-    }else if(NA %in% as.numeric(rownames(sampleMetadata))){
-        print("Find rownames as non numerics")
+    }else if(NA %in% as.numeric(rownames(sampleMetadata))){ #Find rownames as non numerics (= filenames??)
         if("class" %in% colnames(sampleMetadata)){
             MSMS <- gsub(filepattern,"",basename(rownames(sampleMetadata)))
             class <- sampleMetadata[,"class"]
@@ -318,13 +315,13 @@ buildSamplemetadataFromTable <- function(sampleMetadata, files){
             MSMS <- gsub(filepattern,"",basename(rownames(sampleMetadata)))
             class <- sampleMetadata[,"sample_group"]
         }else{
-            error_message <- "Can't find any class or sample_group column for files ! \n"
+            error_message <- "Can't find any class or sample_group column from sampleMetadata ! \n"
             cat(error_message)
             stop(error_message)
             return(NULL)
         }
     }else{
-        error_message <- "Can't find a file name ! \n"
+        error_message <- "Can't find any file name ! Please add a column named \"sample_name\" with your filenames \n"
         cat(error_message)
         stop(error_message)
         return(NULL)
@@ -332,8 +329,6 @@ buildSamplemetadataFromTable <- function(sampleMetadata, files){
             
     #Rebuild sampleMetadata
     sampleMetadata <- cbind(MSMS,class)
-    print(sampleMetadata)
-    
 
     #Keep only MSMS files
     for(i in 1:length(files)){
@@ -344,6 +339,8 @@ buildSamplemetadataFromTable <- function(sampleMetadata, files){
             finaleMSMSclasses <- rbind(finaleMSMSclasses,sampleMetadata[which(sampleMetadata[,"MSMS"] == sampname),])
         }
     }
+    print(finaleMSMSclasses)
+
     return(finaleMSMSclasses)
 }
 
