@@ -100,6 +100,7 @@ As we can see in the previous picture, pooled QC have now enough class specific 
 
 
 
+/!\\ I run it with a little modified msPurity package!! /!\\
 
 
 
