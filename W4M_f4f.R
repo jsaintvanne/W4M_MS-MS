@@ -192,6 +192,9 @@ save(list=object2save[object2save %in% ls()], file=file.path(args$out_dir, 'frag
 
 #Build a comprehensive table for users
 outputdata <- pa@grped_df
+
+#Order by mzmed
+outputdata <- outputdata[order(outputdata[,1]),]
 #if(use_group){
 #if(pa@f4f_link_type == 'group'){
 #    cols.dont.want <- NULL
