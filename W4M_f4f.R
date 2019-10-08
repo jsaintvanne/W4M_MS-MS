@@ -88,7 +88,7 @@ if(args$pa != "NULL"){
 	cat(error_message)
 	stop(error_message)
 }
-print(pa@fileList)
+
 #xset parameter
 #xcmsSet object derived from the same files as those used to create the purityA object
 if(args$xset != "NULL"){
@@ -109,7 +109,7 @@ if(args$xset != "NULL"){
 	cat(error_message)
 	stop(error_message)
 }
-print(xset@filepaths)
+
 #sampleMetadata parameter
 #
 if(!(is.null(args$sampleMetadata))){
@@ -166,10 +166,10 @@ cat("\n\n")
 
 # ----- INFILE PROCESSING -----
 cat("\tINFILE PROCESSING INFO\n\n")
-
+print(pa@fileList)
 
 # ----- MAIN PROCESSING INFO -----
-cat("\n\n\tMAIN PROCESSING INFO\n")
+cat("\n\n\tMAIN PROCESSING INFO\n\n")
 # Handle infiles
 if (!exists("singlefile")) singlefile <- NULL
 if (!exists("zipfile")) zipfile <- NULL
@@ -178,8 +178,15 @@ zipfile <- rawFilePath$zipfile
 singlefile <- rawFilePath$singlefile
 directory <- retrieveRawfileInTheWorkingDirectory(singlefile, zipfile)
 
-cat("\t\tCOMPUTE\n")
-print(head(pa@puritydf))
+# Check some character issues
+md5sumList <- list("origin" = getMd5sum(directory))
+checkXmlStructure(directory)
+checkFilesCompatibilityWithXcms(directory)
+
+cat("\n\n")
+
+cat("\t\tCOMPUTE\n\n")
+
 source("/home/jsaintvanne/W4M/W4M_MS-MS/W4M_run_f4f.R")
 pa <- W4M_frag4feature(pa = pa, xset = xset, sampleMetadata = sampleMetadata, ppm = ppm, plim = plim, intense = mostIntense, 
                       convert2RawRT = convert2RawRT, useGroup = useGroup, create_db = FALSE, out_dir = '.', db_name = NA, 

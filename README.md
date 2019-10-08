@@ -71,25 +71,25 @@ W4M project
 
 ## W4M project
 The [Workflow4Metabolomics]("http://workflow4metabolomics.org"), W4M in short, is a French infrastructure offering software tool processing, analysing and annotating metabolomics data. It is based on the Galaxy platform.
-Having no tool able to process MS-MS datas and wishing to integrate one, we are interested in the msPurity package. This package is very usefull, especially with its purity score which is very interesting for us. 
-As described in this publication[^2], we have a basic protocol for injections describe in the following table :
+Having no tool able to process MS-MS datas and wishing to integrate one, we are interested in the **msPurity package**. This package is very usefull, especially with its purity score which is very interesting for us. 
+As described in this publication[^2], we have a basic protocol for injections describes in the following table :
 
 ![A basic injection of samples](https://github.com/jsaintvanne/W4M_MS-MS/blob/dev/images/basic_table.png)
 
-During this protocol, we make pooled QC samples in which we mix all sample from all classes. That can cause the dilution of our searching compound and we can miss it during the fragmentation selection due to a very low intensity... As explain in the next picture with the A compound :
+During this protocol, we make pooled QC samples in which we mix **all samples** from **all classes**. That can causes the dilution of our searching compound and we can miss it during the fragmentation selection due to a very low intensity... As explain in the next picture with the A compound :
 
 ![A basic manipulation](https://github.com/jsaintvanne/W4M_MS-MS/blob/dev/images/basic_manip.png)
 ![Results from this basic manipulation](https://github.com/jsaintvanne/W4M_MS-MS/blob/dev/images/basic_results.png)
 
-To avoid this kind of loss, we can propose an easy quite new protocol where we make pooled QC samples only if they are from the same class. With this kind of manipulation we should miss less compound because they will be in a good intensity in each pooled QC sample and the fragmentation selection should find them easily : 
+To avoid this kind of loss, we can propose an easy quite new protocol where we make **pooled QC samples only if they are from the same class**. With this kind of manipulation we should miss less compound because they will be in a good intensity in each pooled QC sample and the fragmentation selection should find them easily : 
 
 ![New W4M injection of samples](https://github.com/jsaintvanne/W4M_MS-MS/blob/dev/images/new_table.png)
 
-During these injections, we respect the same protocol as previous one. We just change the end with injection for MS-MS runs. These injections should only concern samples of the same class that have been pooled. With this thing, we can obtain the following results :
+During these injections, we respect the same protocol as previous one. We just change the end with injection for MS-MS runs. These injections should only concern **samples of the same class** that have been pooled. With this thing, we can obtain the following results :
 
 ![New W4M manipulation](https://github.com/jsaintvanne/W4M_MS-MS/blob/dev/images/new_manip.png)
 
-As we can see in the previous picture, pooled QC have now enough class specific compounds to be detected then fragmented. We now have more MS-MS fragmented ions to match with all features peakpicked : 
+As we can see in the previous picture, pooled QC have now **enough class specific compounds** to be detected then fragmented. We now have more MS-MS fragmented ions to match with all features peakpicked : 
 ![New W4M results](https://github.com/jsaintvanne/W4M_MS-MS/blob/dev/images/new_results.png)
 
 
@@ -99,15 +99,4 @@ As we can see in the previous picture, pooled QC have now enough class specific 
 
 
 
-
-/!\\ I run it with a little modified msPurity package!! /!\\
-
-
-
-
-
-
-
-
-
-
+`{note:title=Be Careful}I run it with a little modified msPurity package!!!{note}`
