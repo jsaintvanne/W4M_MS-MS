@@ -21,175 +21,6 @@ getxcmsSetObject <- function(xobject) {
     }
 }
 
-# 2 functions to have a sampleMetadata looks like this 
-#(with no extension for files and just basename) :
-# MSMS 	   class
-#file1    class1
-#file2    class2
-#file3    class1
-#First from xcmsSet object
-buildSamplemetadataFromXCMS <- function(xset){
-	if(!(is.null(xset))){
-  		#Create sampleMetadata for MSMS files with each one and its class (only MSMS)
-  		MSMS <- NULL
-  		classMSMS <- NULL
-  		filepattern <- c("[Cc][Dd][Ff]", "[Nn][Cc]", "([Mm][Zz])?[Xx][Mm][Ll]", 
-                         "[Mm][Zz][Dd][Aa][Tt][Aa]", "[Mm][Zz][Mm][Ll]")
-        filepattern <- paste(paste("\\.", filepattern, "$", sep = ""), collapse = "|")
-  		for(i in 1:length(xset@filepaths)) {
-    		#Select only MSMS files
-    		if(2 %in% unique(readMSData(xset@filepaths[i],mode="onDisk")@featureData@data$msLevel)) {
-            	sampname <- gsub(filepattern, "",basename(xset@filepaths[i])) 
-        		MSMS <- c(MSMS, sampname)
-        		classMSMS <- c(classMSMS,as.character(xset@phenoData[i,"class"]))
-    		}
-  		}
-  		MSMSclassfile <- data.frame(MSMS,classMSMS)
-  		return(MSMSclassfile)
-	}else{
-		error_message <- "No xset available in buildSamplemetadataFromXCMS\n"
-		cat(error_message)
-		stop(error_message)
-		return(NULL)
-  	}	
-}
-#Second from file
-buildSamplemetadataFromFile <- function(MSMSclassfile,xset){
-	finaleMSMSclasses <- NULL
-	if(!(is.null(MSMSclassfile))){
-  		#Read the MSMSclasses
-  		MSMSclasses <- read.csv(file=MSMSclassfile, sep="\t", header=TRUE)
-  		#Verify the colnames
-  		if(length(colnames(MSMSclasses)) == 2){
-  			print("bon nombre de col")
-  			if(colnames(MSMSclasses)[1] == "MSMS" && colnames(MSMSclasses)[2] == "class"){
-  				print("nom de col good")
-  				finaleMSMSclasses <- MSMSclasses
-  			}else{
-  				colnames(MSMSclasses) <- c("MSMS","class")
-  				print(MSMSclasses)
-  				finaleMSMSclasses <- MSMSclasses
-  			}
-  		}else{
-  			print("mauvais nbre de col")
-  			#Verify if MSMS col exists and keep it
-  			if("MSMS" %in% colnames(MSMSclasses)){
-  				MSMS <- MSMSclasses[,which(colnames(MSMSclasses) == "MSMS")]
-  			}else{
-  				error_message <- "No MSMS column in your sampleMetadata"
-  				cat(error_message)
-				stop(error_message)
-				return(NULL)
-  			}
-  			#Verify if class col exists and keep it
-  			if("class" %in% colnames(MSMSclasses)){
-  				class <- MSMSclasses[,which(colnames(MSMSclasses) == "class")]
-  			}else{
-  				error_message <- "No class column in your sampleMetadata"
-  				cat(error_message)
-				stop(error_message)
-				return(NULL)
-  			}
-  			MSMSclasses <- cbind(MSMS,class)
-  			print(MSMSclasses)
-  		}
-  		#Keep only MSMS files
-  		for(i in 1:length(xset@filepaths)) {
-  			#remove .cdf, .mzXML filepattern
-            filepattern <- c("[Cc][Dd][Ff]", "[Nn][Cc]", "([Mm][Zz])?[Xx][Mm][Ll]", 
-                                    "[Mm][Zz][Dd][Aa][Tt][Aa]", "[Mm][Zz][Mm][Ll]")
-            filepattern <- paste(paste("\\.", filepattern, "$", sep = ""), collapse = "|")
-            sampname<-gsub(filepattern, "",basename(xset@filepaths[i]))  
-    		if(2 %in% unique(readMSData(xset@filepaths[i],mode="onDisk")@featureData@data$msLevel)) {
-        		addMSMS <- MSMSclasses[which(MSMSclasses$MSMS == sampname),]
-        		print(addMSMS)
-        		finaleMSMSclasses <- rbind(finaleMSMSclasses,addMSMS)
-    		}
-  		}
-  		return(finaleMSMSclasses)
-	}else{
-  		error_message <- "No sampleMetadata file enter\n"
-  		cat(error_message)
-		stop(error_message)
-		return(NULL)
-	}
-}
-#Thirs from table to do ????
-
-
-#This function create a tempo xcmsSet object with only peaks from class of MSMSfile we are looking at
-modifyXsetObject <- function(xset, MSMSfile, class){
-	cat(paste("--------------- Modify xcmsSet object for",MSMSfile,"from",class,"class ---------------\n"))
-    cat("STEP 1 : find good groups from our class\n")
-    #STEP 1 : select groups in xset@groups for the good class and save ids of groups deleted
-    #Select groups which contain peaks in the same class as file class
-    xset@phenoData <- xset@phenoData[which(gsub(filepattern,"",xset@phenoData[,"sample_name"]) == MSMSfile),]
-    xset@filepaths <- xset@filepaths[which(basename(xset@filepaths) == rownames(xset@phenoData))]
-    #Save line where we have one peak in one file of my class
-    allsavedgroups <- xset@groups[which(xset@groups[,class] > 0),]
-    #Save line number where 0 peaks is in my files of my class
-    alldeletedgroups <- which(xset@groups[,class] == 0)
-    cat("\tDeleting",length(alldeletedgroups),"group(s) from groups tabledata and stock",nrow(allsavedgroups),"group(s) from class",class,"from xset\n")
-
-    cat("STEP 2 : add grpid for each peak and delete when they are not in the good group\n")
-    #STEP 2 : Delete peaks from the wrong groups (groups to delete)   
-    #Add new col for grpid number for each peak
-    grpidcol <- rep(NA, length(xset@peaks))
-    xset@peaks <- cbind(xset@peaks,grpidcol)
-    #Complete grpid for each peak
-    for(x in 1:length(xset@groupidx)){
-        for(y in 1:length(xset@groupidx[[x]])){
-            xset@peaks[xset@groupidx[[x]][y],"grpidcol"] <- x
-        }
-    }
-    #Delete peaks where groupidx have to be delete
-    peaktodelete <- NULL
-    peaktodelete <- which(xset@peaks[,"grpidcol"] %in% alldeletedgroups)
-    if(length(peaktodelete) > 0){
-        xset@peaks <- xset@peaks[-peaktodelete,]
-    }
-    cat("\tWe now have",nrow(xset@peaks),"peaks and deleting",length(peaktodelete),"peaks which were not in groups where we have peak froms class \"",class,"\" !\n")
-    
-    cat("STEP 3 : Rebuild groupidx and groups\n")
-    #STEP 3 : Rebuild groupidx with new row for groups and peaks (usefull for groupval after...)
-    newgrpidx <- xset@groupidx
-    newgrpidx <- lapply(newgrpidx, function(a) a <- NULL)
-    for(p in 1:nrow(xset@peaks)){
-        if(!(is.na(xset@peaks[p,"grpidcol"]))){
-        	newgrpidx[[xset@peaks[p,"grpidcol"]]] <- c(newgrpidx[[xset@peaks[p,"grpidcol"]]],p)
-        }else{
-        	next
-        }
-        
-    }
-    if(length(alldeletedgroups) > 0){
-        newgrpidx <- newgrpidx[-alldeletedgroups]
-    }
-    xset@groupidx <- newgrpidx
-    cat("\tRebuild groupidx with",length(xset@groupidx),"groupidx ! \n")
-    xset@groups <- allsavedgroups
-    cat("\tRebuild groups with",nrow(xset@groups),"groups ! \n")
-
-    #Delete line grpidcol after order them 
-    xset@peaks <- subset(xset@peaks, select = -(which(colnames(xset@peaks)=="grpidcol")))
-
-    return(xset)
-}
-
-#This function keep MSMS informations only from our MSMSfile we are working with
-modifyPaObject <- function(pa, MSMSfile){
-	cat(paste("--------------- Modify pa object for",MSMSfile,"---------------\n"))
-	patempo <- pa
-	cat("STEP 1 : modify pa@fileList\n")
-	#patempo@fileList <- pa@fileList[which(gsub(filepattern,"",names(pa@fileList)) == MSMSfile)]
-
-	cat("STEP 2 : modify pa@puritydf\n")
-	fileIndex <- which(gsub(filepattern,"",names(pa@fileList)) == MSMSfile)
-	patempo@puritydf <- pa@puritydf[which(pa@puritydf[,"fileid"] == fileIndex),]
-
-	return(patempo)
-}
-
 # This function get the raw file path from the arguments
 #@author Gildas Le Corguille lecorguille@sb-roscoff.fr
 getRawfilePathFromArguments <- function(singlefile, zipfile, args, prefix="") {
@@ -261,4 +92,92 @@ retrieveRawfileInTheWorkingDirectory <- function(singlefile, zipfile) {
 
     }
     return (directory)
+}
+
+# This function check if XML contains special caracters. It also checks integrity and completness.
+#@author Misharl Monsoor misharl.monsoor@sb-roscoff.fr ABiMS TEAM
+checkXmlStructure <- function (directory) {
+    cat("Checking XML structure...\n")
+
+    cmd <- paste0("IFS=$'\n'; for xml in $(find '",directory,"' -not -name '\\.*' -not -path '*conda-env*' -type f -iname '*.*ml*'); do if [ $(xmllint --nonet --noout \"$xml\" 2> /dev/null; echo $?) -gt 0 ]; then echo $xml;fi; done;")
+    capture <- system(cmd, intern=TRUE)
+
+    if (length(capture)>0){
+        #message=paste("The following mzXML or mzML file is incorrect, please check these files first:",capture)
+        write("\n\nERROR: The following mzXML or mzML file(s) are incorrect, please check these files first:", stderr())
+        write(capture, stderr())
+        stop("ERROR: xcmsSet cannot continue with incorrect mzXML or mzML files")
+    }
+
+}
+
+
+# This function check if XML contain special characters
+#@author Misharl Monsoor misharl.monsoor@sb-roscoff.fr ABiMS TEAM
+deleteXmlBadCharacters<- function (directory) {
+    cat("Checking Non ASCII characters in the XML...\n")
+
+    processed <- F
+    l <- system( paste0("find '",directory, "' -not -name '\\.*' -not -path '*conda-env*' -type f -iname '*.*ml*'"), intern=TRUE)
+    for (i in l){
+        cmd <- paste("LC_ALL=C grep '[^ -~]' \"", i, "\"", sep="")
+        capture <- suppressWarnings(system(cmd, intern=TRUE))
+        if (length(capture)>0){
+            cmd <- paste("perl -i -pe 's/[^[:ascii:]]//g;'",i)
+            print( paste("WARNING: Non ASCII characters have been removed from the ",i,"file") )
+            c <- system(cmd, intern=TRUE)
+            capture <- ""
+            processed <- T
+        }
+    }
+    if (processed) cat("\n\n")
+    return(processed)
+}
+
+
+# This function will compute MD5 checksum to check the data integrity
+#@author Gildas Le Corguille lecorguille@sb-roscoff.fr
+getMd5sum <- function (directory) {
+    cat("Compute md5 checksum...\n")
+    # WHAT XCMS WILL FIND
+    filepattern <- c("[Cc][Dd][Ff]", "[Nn][Cc]", "([Mm][Zz])?[Xx][Mm][Ll]","[Mm][Zz][Dd][Aa][Tt][Aa]", "[Mm][Zz][Mm][Ll]")
+    filepattern <- paste(paste("\\.", filepattern, "$", sep=""),collapse="|")
+    info <- file.info(directory)
+    listed <- list.files(directory[info$isdir], pattern=filepattern, recursive=TRUE, full.names=TRUE)
+    files <- c(directory[!info$isdir], listed)
+    exists <- file.exists(files)
+    files <- files[exists]
+
+    library(tools)
+
+    #cat("\n\n")
+
+    return(as.matrix(md5sum(files)))
+}
+
+# This function check if xcms will found all the files
+#@author Gildas Le Corguille lecorguille@sb-roscoff.fr ABiMS TEAM
+checkFilesCompatibilityWithXcms <- function(directory) {
+    cat("Checking files filenames compatibilities with xmcs...\n")
+    # WHAT XCMS WILL FIND
+    filepattern <- c("[Cc][Dd][Ff]", "[Nn][Cc]", "([Mm][Zz])?[Xx][Mm][Ll]","[Mm][Zz][Dd][Aa][Tt][Aa]", "[Mm][Zz][Mm][Ll]")
+    filepattern <- paste(paste("\\.", filepattern, "$", sep=""),collapse="|")
+    info <- file.info(directory)
+    listed <- list.files(directory[info$isdir], pattern=filepattern, recursive=TRUE, full.names=TRUE)
+    files <- c(directory[!info$isdir], listed)
+    files_abs <- file.path(getwd(), files)
+    exists <- file.exists(files_abs)
+    files[exists] <- files_abs[exists]
+    files[exists] <- sub("//","/",files[exists])
+
+    # WHAT IS ON THE FILESYSTEM
+    filesystem_filepaths <- system(paste0("find \"",getwd(),"/",directory,"\" -not -name '\\.*' -not -path '*conda-env*' -type f -name \"*\""), intern=T)
+    filesystem_filepaths <- filesystem_filepaths[grep(filepattern, filesystem_filepaths, perl=T)]
+
+    # COMPARISON
+    if (!is.na(table(filesystem_filepaths %in% files)["FALSE"])) {
+        write("\n\nERROR: List of the files which will not be imported by xcmsSet",stderr())
+        write(filesystem_filepaths[!(filesystem_filepaths %in% files)],stderr())
+        stop("\n\nERROR: One or more of your files will not be import by xcmsSet. It may due to bad characters in their filenames.")
+    }
 }
