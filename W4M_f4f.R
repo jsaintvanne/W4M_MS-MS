@@ -1,7 +1,42 @@
 #!/usr/bin/env Rscript
 #W4M_run_f4f.R version 0.0.10
 #created by Julien Saint-Vanne
+xset_pa_filename_fix <- function(opt, pa, xset=NULL){
+  if (!is.null(opt$mzML_files) && !is.null(opt$galaxy_names)){
+    # NOTE: Relies on the pa@fileList having the names of files given as 'names' of the variables
+    # needs to be done due to Galaxy moving the files around and screwing up any links to files
 
+    filepaths <- trimws(strsplit(opt$mzML_files, ',')[[1]])
+    filepaths <- filepaths[filepaths != ""]
+    new_names <- basename(filepaths)
+
+    galaxy_names <- trimws(strsplit(opt$galaxy_names, ',')[[1]])
+    galaxy_names <- galaxy_names[galaxy_names != ""]
+
+    nsave <- names(pa@fileList)
+    old_filenames  <- basename(pa@fileList)
+
+    pa@fileList <- filepaths[match(names(pa@fileList), galaxy_names)]
+    names(pa@fileList) <- nsave
+
+    pa@puritydf$filename <- basename(pa@fileList[match(pa@puritydf$filename, old_filenames)])
+    pa@grped_df$filename <- basename(pa@fileList[match(pa@grped_df$filename, old_filenames)])
+  }
+
+  if(!is.null(xset)){
+    if(!all(basename(pa@fileList)==basename(xset@filepaths))){
+       if(!all(names(pa@fileList)==basename(xset@filepaths))){
+          print('FILELISTS DO NOT MATCH')
+          message('FILELISTS DO NOT MATCH')
+          quit(status = 1)
+       }else{
+          xset@filepaths <- unname(pa@fileList)
+       }
+   }
+ }
+
+  return(list(pa, xset))
+}
 
 # ----- LOG FILE -----
 log_file <- file("log.txt", open = "wt")
@@ -144,7 +179,11 @@ if(args$mostIntense == "true"){
 convert2RawRT = FALSE
 #useGroup parameter
 #Ignore individual peaks and just find matching fragmentation spectra within the (full) rtmin rtmax of each grouped feature
-useGroup = TRUE
+if(args$useGroup == "false"){
+  useGroup = FALSE
+}else{
+  useGroup = TRUE
+}
 #createDB parameter
 #(Deprecated, to be removed - use createDatabase function) SQLite database will be created of the results
 createDB = FALSE
@@ -166,7 +205,22 @@ cat("\n\n")
 
 # ----- INFILE PROCESSING -----
 cat("\tINFILE PROCESSING INFO\n\n")
+
+#Correction of filenames (if Galaxy uses)
+if(!useGroup){
+  fix <- xset_pa_filename_fix(args, pa, xset)
+  pa <- fix[[1]]
+  xset <- fix[[2]]
+  useGroup=FALSE
+}else{
+  # if are only aligning to the group not each file we do not need to align the files between the xsettempo and pa object
+  fix <- xset_pa_filename_fix(args, pa)
+  pa <- fix[[1]]
+  useGroup=TRUE
+}
 print(pa@fileList)
+print(xset@filepaths)
+
 
 # ----- MAIN PROCESSING INFO -----
 cat("\n\n\tMAIN PROCESSING INFO\n\n")
@@ -212,7 +266,10 @@ outputdata <- outputdata[order(outputdata[,1]),]
 #    cols.dont.want <- c("sample", "is_filled", "cid", "pid", "precurMtchID", "fileid") # if you want to remove multiple columns
 #    outputdata <- outputdata[, ! names(outputdata) %in% cols.dont.want, drop = F]
 #}
-write.table(outputdata, file.path(args$out_dir, 'frag4feature.tsv'), row.names=FALSE, sep='\t')
+write.table(outputdata, file.path(args$out_dir, 'out/frag4feature.tsv'), row.names=FALSE, sep='\t')
 
+cat("\nEnd of the '", modNamC, "' Galaxy module call: ", format(Sys.time(), "%a %d %b %Y %X"), "\n\n", sep="")
 
 cat("\n\t\tDONE\n\n")
+
+
