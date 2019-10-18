@@ -242,31 +242,41 @@ cat("\n\n")
 cat("\t\tCOMPUTE\n\n")
 
 source("/home/jsaintvanne/W4M/W4M_MS-MS/W4M_run_f4f.R")
-pa <- W4M_frag4feature(pa = pa, xset = xset, sampleMetadata = sampleMetadata, ppm = ppm, plim = plim, intense = mostIntense, 
+final_pa <- W4M_frag4feature(pa = pa, xset = xset, sampleMetadata = sampleMetadata, ppm = ppm, plim = plim, intense = mostIntense, 
                       convert2RawRT = convert2RawRT, useGroup = useGroup, create_db = FALSE, out_dir = '.', db_name = NA, 
                       grp_peaklist = NA, use_group = NA)
 
-saveRDS(pa, 'test_pa.rds')
+print(final_pa)
 
-object2save <- c("pa")
-save(list=object2save[object2save %in% ls()], file=file.path(args$out_dir, 'frag4feature.RData'))
 
-#Build a comprehensive table for users
-outputdata <- pa@grped_df
-
-#Order by mzmed
-outputdata <- outputdata[order(outputdata[,1]),]
-#if(use_group){
-#if(pa@f4f_link_type == 'group'){
-#    cols.dont.want <- NULL
+dir.create("tsv",showWarnings=FALSE)
+dir.create("rdata",showWarnings=FALSE)
+for(o in 1:length(final_pa)){
+  cat("Saving object for ",names(final_pa)[o]," class...\n")
+  pa <- final_pa[[o]]
+  outputframe <- pa@grped_df
+  #Order by mzmed
+  outputframe <- outputframe[order(outputframe[,1]),]
+  #if(use_group){
+  #if(pa@f4f_link_type == 'group'){
+  #    cols.dont.want <- NULL
     #cols.dont.want <- c("pid", "precurMtchID", "fileid") # if you want to remove multiple columns
-#    outputdata <- outputdata[, ! names(outputdata) %in% cols.dont.want, drop = F]
-#}else{
-#    print("la")
-#    cols.dont.want <- c("sample", "is_filled", "cid", "pid", "precurMtchID", "fileid") # if you want to remove multiple columns
-#    outputdata <- outputdata[, ! names(outputdata) %in% cols.dont.want, drop = F]
-#}
-write.table(outputdata, file.path(args$out_dir, 'out/frag4feature.tsv'), row.names=FALSE, sep='\t')
+  #    outputdata <- outputdata[, ! names(outputdata) %in% cols.dont.want, drop = F]
+  #}else{
+  #    print("la")
+  #    cols.dont.want <- c("sample", "is_filled", "cid", "pid", "precurMtchID", "fileid") # if you want to remove multiple columns
+  #    outputdata <- outputdata[, ! names(outputdata) %in% cols.dont.want, drop = F]
+  #}
+  file_path <- paste0('tsv/f4fresult_for_',names(final_pa)[o],"_class.tsv")
+  write.table(outputframe, file=paste0(args$out_dir, "/",file_path), row.names=FALSE, sep='\t')
+
+  
+  save(pa,file=paste0(args$out_dir, "/rdata/f4fresult_for_",names(final_pa)[o],"_class.Rdata"))
+}
+#Build a comprehensive table for users
+#outputdata <- pa@grped_df
+
+
 
 cat("\nEnd of the '", modNamC, "' Galaxy module call: ", format(Sys.time(), "%a %d %b %Y %X"), "\n\n", sep="")
 
