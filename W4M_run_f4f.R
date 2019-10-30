@@ -160,7 +160,7 @@ W4M_frag4feature <- function(pa, xset, sampleMetadata=NULL, ppm=5, plim=NA, inte
         sourceDirectory("/home/jsaintvanne/W4M/msPurity/R")
         # 6 - Run f4f function from msPurity
         cat(paste("\n--------------- Run frag4feature in msPurity package ---------------\n"))
-        cat(paste("Searching in",nrow(patempo@puritydf),"MSMS datas..."))
+        cat(paste("Searching in",nrow(patempo@puritydf),"MSMS datas...\n"))
         patempo <- frag4feature(pa=patempo, 
                        xset=xsettempo, 
                        ppm=ppm, 
@@ -259,7 +259,7 @@ egal_pa_xset_filenames <- function(xset, pa){
 #First from xcmsSet object with all MSMS files possible
 buildSamplemetadataFromXCMS <- function(xset, pa){
     if(!(is.null(xset))){
-  		MSMS <- NULL
+        MSMS <- NULL
   		class <- NULL
   		filepattern <- c("[Cc][Dd][Ff]", "[Nn][Cc]", "([Mm][Zz])?[Xx][Mm][Ll]", 
                        "[Mm][Zz][Dd][Aa][Tt][Aa]", "[Mm][Zz][Mm][Ll]")
@@ -272,7 +272,7 @@ buildSamplemetadataFromXCMS <- function(xset, pa){
     		if(2 %in% unique(readMSData(xset@filepaths[i],mode="onDisk")@featureData@data$msLevel)) {
             	sampname <- gsub(filepattern, "",basename(xset@filepaths[i])) 
         		MSMS <- c(MSMS, sampname)
-        		class <- c(class,as.character(xset@phenoData[i,"class"]))
+        		class <- c(class,make.names(as.character(xset@phenoData[i,"class"])))
     		}
   		}
         class <- make.names(class) #Correction of spaces in class names

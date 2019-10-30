@@ -246,8 +246,6 @@ final_pa <- W4M_frag4feature(pa = pa, xset = xset, sampleMetadata = sampleMetada
                       convert2RawRT = convert2RawRT, useGroup = useGroup, create_db = FALSE, out_dir = '.', db_name = NA, 
                       grp_peaklist = NA, use_group = NA)
 
-print(final_pa)
-
 
 dir.create("tsv",showWarnings=FALSE)
 dir.create("rdata",showWarnings=FALSE)
@@ -255,6 +253,7 @@ for(o in 1:length(final_pa)){
   cat("Saving object for ",names(final_pa)[o]," class...\n")
   pa <- final_pa[[o]]
   outputframe <- pa@grped_df
+  #Build a comprehensive table for users
   #Order by mzmed
   outputframe <- outputframe[order(outputframe[,1]),]
   #if(use_group){
@@ -273,8 +272,7 @@ for(o in 1:length(final_pa)){
   
   save(pa,file=paste0(args$out_dir, "/rdata/f4fresult_for_",names(final_pa)[o],"_class.Rdata"))
 }
-#Build a comprehensive table for users
-#outputdata <- pa@grped_df
+
 
 
 
