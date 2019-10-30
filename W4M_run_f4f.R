@@ -84,7 +84,7 @@
 W4M_frag4feature <- function(pa, xset, sampleMetadata=NULL, ppm=5, plim=NA, intense=TRUE, convert2RawRT=TRUE, useGroup=FALSE, create_db=FALSE,
                                 out_dir='.', db_name=NA, grp_peaklist=NA, use_group=NA){
   
-    pkgs <- c("R.utils","batch") #"batch" necessary for parseCommandArgs function
+    pkgs <- c("R.utils","batch","plyr") #"batch" necessary for parseCommandArgs function
     loadAndDisplayPackages(pkgs)
 
     #Need it to run the latest msPurity
@@ -93,16 +93,15 @@ W4M_frag4feature <- function(pa, xset, sampleMetadata=NULL, ppm=5, plim=NA, inte
     #Works on xset and pa object before process them
     xset <- getxcmsSetObject(xset)
     xset <- egal_pa_xset_filenames(xset, pa)
-
     #Checking and building a good sampleMetadata containing only MSMS files
     if(is.null(sampleMetadata)){
 	   sampleMetadataMSMS <- buildSamplemetadataFromXCMS(xset,pa)
     }else{
         #Verify if we have a file
         if(class(sampleMetadata) == "character"){
-            sampleMetadataMSMS <- buildSamplemetadataFromFile(sampleMetadata,xset)
+            sampleMetadataMSMS <- buildSamplemetadataFromFile(sampleMetadata,xset,pa)
         }else{
-            sampleMetadataMSMS <- buildSamplemetadataFromTable(sampleMetadata,xset)
+            sampleMetadataMSMS <- buildSamplemetadataFromTable(sampleMetadata,xset,pa)
         }
     }
 
@@ -134,25 +133,25 @@ W4M_frag4feature <- function(pa, xset, sampleMetadata=NULL, ppm=5, plim=NA, inte
 
         # 4 - Find if retention time have been processed for this file
         #remove .cdf, .mzXML filepattern and find the file index number
-        filepattern <- c("[Cc][Dd][Ff]", "[Nn][Cc]", "([Mm][Zz])?[Xx][Mm][Ll]", 
-                         "[Mm][Zz][Dd][Aa][Tt][Aa]", "[Mm][Zz][Mm][Ll]")
-        filepattern <- paste(paste("\\.", filepattern, "$", sep = ""), collapse = "|")
-        for(f in 1:length(xsettempo@filepaths)){
-            sampname <- gsub(filepattern, "",basename(xsettempo@filepaths[f]))
-            if(sampname %in% gsub(filepattern,"",names(patempo@fileList))){
-                fileIndexMSMS <- f
-                break
-            }
-        }
-        convert2RawRT = FALSE
-        for(n in 1:length(xsettempo@.processHistory)){
-            if(fileIndexMSMS %in% fileIndex(xsettempo@.processHistory[[n]])){
-                if(xsettempo@.processHistory[[n]]@type == "Retention time correction"){
-                    cat("Retention time used for file numbers \"",fileIndexMSMS,"\"\n")
-                    convert2RawRT= TRUE
-                }
-            }
-        }
+        # filepattern <- c("[Cc][Dd][Ff]", "[Nn][Cc]", "([Mm][Zz])?[Xx][Mm][Ll]", 
+        #                  "[Mm][Zz][Dd][Aa][Tt][Aa]", "[Mm][Zz][Mm][Ll]")
+        # filepattern <- paste(paste("\\.", filepattern, "$", sep = ""), collapse = "|")
+        # for(f in 1:length(xsettempo@filepaths)){
+        #     sampname <- gsub(filepattern, "",basename(xsettempo@filepaths[f]))
+        #     if(sampname %in% gsub(filepattern,"",names(patempo@fileList))){
+        #         fileIndexMSMS <- f
+        #         break
+        #     }
+        # }
+        # convert2RawRT = FALSE
+        # for(n in 1:length(xsettempo@.processHistory)){
+        #     if(fileIndexMSMS %in% fileIndex(xsettempo@.processHistory[[n]])){
+        #         if(xsettempo@.processHistory[[n]]@type == "Retention time correction"){
+        #             cat("Retention time used for file numbers \"",fileIndexMSMS,"\"\n")
+        #             convert2RawRT= TRUE
+        #         }
+        #     }
+        # }
         if(NA %in% match(xsettempo@rt$raw,xsettempo@rt$corrected)){
             convert2RawRT= TRUE
         }
@@ -161,6 +160,7 @@ W4M_frag4feature <- function(pa, xset, sampleMetadata=NULL, ppm=5, plim=NA, inte
         sourceDirectory("/home/jsaintvanne/W4M/msPurity/R")
         # 6 - Run f4f function from msPurity
         cat(paste("\n--------------- Run frag4feature in msPurity package ---------------\n"))
+        cat(paste("Searching in",nrow(patempo@puritydf),"MSMS datas...\n"))
         patempo <- frag4feature(pa=patempo, 
                        xset=xsettempo, 
                        ppm=ppm, 
@@ -173,8 +173,8 @@ W4M_frag4feature <- function(pa, xset, sampleMetadata=NULL, ppm=5, plim=NA, inte
                        db_name='alldata.sqlite',
                        grp_peaklist=grp_peaklist,
                        use_group=useGroup)
-        cat("Frag4feature finish !\n\n")
-        print(patempo)
+        cat("\nFrag4feature finish !\n\n")
+
         patempo@grped_df$filename <- sapply(patempo@grped_df$fileid, function(x) names(patempo@fileList)[as.integer(x)])
         
         # # 7 - Merge results in one pa object of one class
@@ -247,6 +247,7 @@ egal_pa_xset_filenames <- function(xset, pa){
             return(xset)
         }
     }
+    return(xset)
 }
 
 # 3 functions to have a sampleMetadata looks like this 
@@ -258,7 +259,7 @@ egal_pa_xset_filenames <- function(xset, pa){
 #First from xcmsSet object with all MSMS files possible
 buildSamplemetadataFromXCMS <- function(xset, pa){
     if(!(is.null(xset))){
-  		MSMS <- NULL
+        MSMS <- NULL
   		class <- NULL
   		filepattern <- c("[Cc][Dd][Ff]", "[Nn][Cc]", "([Mm][Zz])?[Xx][Mm][Ll]", 
                        "[Mm][Zz][Dd][Aa][Tt][Aa]", "[Mm][Zz][Mm][Ll]")
@@ -271,7 +272,7 @@ buildSamplemetadataFromXCMS <- function(xset, pa){
     		if(2 %in% unique(readMSData(xset@filepaths[i],mode="onDisk")@featureData@data$msLevel)) {
             	sampname <- gsub(filepattern, "",basename(xset@filepaths[i])) 
         		MSMS <- c(MSMS, sampname)
-        		class <- c(class,as.character(xset@phenoData[i,"class"]))
+        		class <- c(class,make.names(as.character(xset@phenoData[i,"class"])))
     		}
   		}
         class <- make.names(class) #Correction of spaces in class names
@@ -285,12 +286,12 @@ buildSamplemetadataFromXCMS <- function(xset, pa){
     }	
 }
 #Second from file
-buildSamplemetadataFromFile <- function(sampleMetadata,xset){
+buildSamplemetadataFromFile <- function(sampleMetadata,xset,pa){
     finaleMSMSclasses <- NULL
 	if(!(is.null(sampleMetadata))){
   		#Read the CSV file
   		MSMSclasses <- read.csv(file=sampleMetadata, sep="\t", header=TRUE)
-  		finaleMSMSclasses <- buildSamplemetadataFromTable(MSMSclasses, xset@filepaths)
+  		finaleMSMSclasses <- buildSamplemetadataFromTable(MSMSclasses, xset@filepaths,pa)
         return(finaleMSMSclasses)
 	}else{
   		error_message <- "No sampleMetadata file enter\n"
@@ -300,7 +301,7 @@ buildSamplemetadataFromFile <- function(sampleMetadata,xset){
 	}
 }
 #Third from table
-buildSamplemetadataFromTable <- function(sampleMetadata, files){
+buildSamplemetadataFromTable <- function(sampleMetadata, files,pa){
     finaleMSMSclasses <- NULL
     #remove .cdf, .mzXML filepattern
     filepattern <- c("[Cc][Dd][Ff]", "[Nn][Cc]", "([Mm][Zz])?[Xx][Mm][Ll]", 
@@ -372,7 +373,7 @@ buildSamplemetadataFromTable <- function(sampleMetadata, files){
 
 #This function create a tempo xcmsSet object with only peaks from class we are looking at
 modifyXsetObject <- function(xset, class){
-    cat(paste("\n--------------- Modify xcmsSet object for \"",class,"\" class ---------------\n"))
+    cat(paste("\n--------------- Modify xcmsSet object for \"",class,"\" class file(s) ---------------\n"))
     cat("STEP 1 : find good groups from our class\n")
     #STEP 1 : select groups in xset@groups for the good class and save ids of groups deleted
     #Select groups which contain peaks in the same class as file class
@@ -451,8 +452,8 @@ modifyPaObject <- function(pa, files,class){
                      "[Mm][Zz][Dd][Aa][Tt][Aa]", "[Mm][Zz][Mm][Ll]")
     filepattern <- paste(paste("\\.", filepattern, "$", sep = ""), collapse = "|")
 
-	cat(paste("\n--------------- Modify pa object for",class,"file(s) ---------------\n"))
-	cat("STEP 1 : modify pa@fileList\n")
+	cat(paste("\n--------------- Modify pa object for \"",class,"\" class file(s) ---------------\n"))
+	#cat("STEP 1 : modify pa@fileList\n")
 	# keep_file <- NULL
  #    for(m in 1:length(pa@fileList)){
  #        if(!(2 %in% unique(readMSData(pa@fileList[m],mode="onDisk")@featureData@data$msLevel))) {
@@ -468,9 +469,11 @@ modifyPaObject <- function(pa, files,class){
  #    }
  #    pa@fileList <- pa@fileList[match(keep_file,pa@fileList)]
 
-    cat("STEP 2 : modify pa@puritydf\n")
-	fileIndex <- which(gsub(filepattern,"",names(pa@fileList)) == files)
-	pa@puritydf <- pa@puritydf[which(pa@puritydf[,"fileid"] == fileIndex),]
-
+    #cat("STEP 1 : modify pa@puritydf\n")
+    cat("Select datas for file(s) : ")
+    cat(files,sep=", ")
+    cat("\n")
+	fileIndex <- which(gsub(filepattern,"",names(pa@fileList)) %in% files)
+	pa@puritydf <- pa@puritydf[which(pa@puritydf[,"fileid"] %in% fileIndex),]
 	return(pa)
 }

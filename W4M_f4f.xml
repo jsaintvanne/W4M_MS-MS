@@ -56,12 +56,12 @@
 
     <outputs>
         <data name="log" format="txt" label="f4f.log.txt" from_work_dir="log.txt" />
-        <data name="report" format="txt">
-            <discover_datasets pattern="__designation__" format="tsv" directory="out" visible="true" />
-        <data/>
-        <data name="report2" format="txt">
-            <discover_datasets pattern="__designation__" format="rdata" directory="out" visible="true" />
-        <data/>
+        <collection name="table_result" type="list" label="f4fresult_tables">
+            <discover_datasets pattern="__designation_and_ext__" directory="tsv" format="tsv" />
+        </collection>
+        <collection name="rdata_result" type="list" label="f4frdata_results">
+            <discover_datasets pattern="__designation_and_ext__" directory="rdata" format="rdata"/>
+        </collection>
     </outputs>
 
     <tests>
@@ -80,8 +80,8 @@
             <param name="xset" value="xset_group_LCMS_1_LCMS_2_LCMSMS_1_LCMSMS_2.RData"/>
             <param name="pa" value="assess_purity_msms_output_LCMS_1_LCMS_2_LCMSMS_1_LCMSMS_2.RData"/>
             <param name="sampleMetadata" value="sampleMetadata.tsv" />
-            <output name="frag4feature_grouped_msms" value="frag4feature_LCMS_1_LCMS_2_LCMSMS_1_LCMSMS_2.tsv"/>
-            <output name="frag4feature_rdata" value="frag4feature_LCMS_1_LCMS_2_LCMSMS_1_LCMSMS_2.RData" ftype="rdata" compare="sim_size"/>
+            <output name="table_result" value="frag4feature_LCMS_1_LCMS_2_LCMSMS_1_LCMSMS_2.tsv"/>
+            <output name="rdata_result" value="frag4feature_LCMS_1_LCMS_2_LCMSMS_1_LCMSMS_2.RData" ftype="rdata" compare="sim_size"/>
         </test>
     </tests>
     
